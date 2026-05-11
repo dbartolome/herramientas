@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Estado RGPD web | Nimbus Security Platform</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=Outfit:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+    <style>
+      .rgpd-shell { width: min(1080px, 94vw); }
+      .rgpd-panel { padding: 18px; display: grid; gap: 12px; }
+      .rgpd-form { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: end; }
+      .scan-progress { display: grid; gap: 8px; }
+      .scan-progress-head { display: flex; justify-content: space-between; align-items: center; color: var(--text-muted); font-size: 0.88rem; }
+      .scan-progress-track { height: 10px; border-radius: 999px; border: 1px solid rgba(255, 255, 255, 0.25); background: rgba(7, 28, 42, 0.55); overflow: hidden; }
+      .scan-progress-fill { height: 100%; width: 0; border-radius: 999px; background: linear-gradient(90deg, #34e7b0, #60d3ff); transition: width 260ms ease; }
+      .rgpd-note { margin: 0; color: var(--text-muted); font-size: 0.9rem; }
+      .rgpd-summary { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+      .rgpd-summary h2 { margin: 4px 0 0; font-size: 2.1rem; font-family: "Sora", sans-serif; }
+      .rgpd-evidence { display: grid; gap: 10px; }
+      .rgpd-checks { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 10px; }
+      .rgpd-check { border: 1px solid rgba(255, 255, 255, 0.24); border-left: 4px solid rgba(255, 255, 255, 0.25); border-radius: 14px; padding: 14px; background: linear-gradient(155deg, rgba(255, 255, 255, 0.11), rgba(255, 255, 255, 0.06)); }
+      .rgpd-check.pass { border-left-color: #38d39f; }
+      .rgpd-check.partial { border-left-color: #ffba57; }
+      .rgpd-check.fail { border-left-color: #ff6464; }
+      .rgpd-check.info { border-left-color: #69d8ff; }
+      .rgpd-check h3 { margin: 4px 0 8px; font-family: "Sora", sans-serif; font-size: 1rem; }
+      .rgpd-check p { margin: 0 0 8px; color: var(--text-muted); font-size: 0.9rem; }
+      .rgpd-links-row { display: flex; gap: 10px; flex-wrap: wrap; }
+      .rgpd-risks { margin: 0; padding-left: 18px; color: var(--text-muted); }
+      .rgpd-error { border-color: rgba(255, 83, 83, 0.55); color: #ffe3e3; }
+      .history-list { display: grid; gap: 8px; }
+      .history-item { border: 1px solid rgba(255,255,255,.22); border-radius: 12px; padding: 10px; background: rgba(255,255,255,.07); cursor: pointer; }
+      .history-top { display: flex; justify-content: space-between; gap: 8px; }
+      .history-id { font-size: .75rem; color: var(--text-muted); }
+      .history-meta { font-size: .85rem; color: var(--text-muted); margin: 0; }
+      .status-chip.is-running { background: rgba(96, 211, 255, 0.2); border: 1px solid rgba(96, 211, 255, 0.5); }
+      .status-chip.is-queued { background: rgba(255, 196, 87, 0.2); border: 1px solid rgba(255, 196, 87, 0.5); }
+      .status-chip.is-failed { background: rgba(255, 83, 83, 0.2); border: 1px solid rgba(255, 83, 83, 0.5); }
+      .status-chip.is-completed { background: rgba(48, 217, 162, 0.2); border: 1px solid rgba(48, 217, 162, 0.5); }
+      .check-modal { max-width: 700px; width: min(90vw, 700px); border: 1px solid rgba(255,255,255,.3); }
+      .check-modal-content { display: grid; gap: 10px; }
+      .check-modal-head { display: flex; justify-content: space-between; gap: 12px; align-items: center; }
+      .check-modal-json { margin: 0; white-space: pre-wrap; word-break: break-word; padding: 10px; border-radius: 10px; background: rgba(5, 22, 34, 0.55); border: 1px solid rgba(255,255,255,.25); color: var(--text-muted); }
+      @media (max-width: 860px) { .rgpd-summary { grid-template-columns: 1fr; } .rgpd-form { grid-template-columns: 1fr; } }
+    </style>
+  </head>
+  <body>
+    <div class="aurora aurora-a"></div>
+    <div class="aurora aurora-b"></div>
+
+    <main class="shell rgpd-shell">
+      <header class="glass header">
+        <div>
+          <div class="brand">
+            <img src="./assets/nimbus-logo.svg" alt="Nimbus Tech" class="brand-logo" />
+            <p class="eyebrow">Compliance Tool</p>
+          </div>
+          <h1>Estado RGPD web</h1>
+          <p class="subtitle">Escaneo técnico avanzado con resultado estructurado, evidencias y análisis detallado por check.</p>
+        </div>
+        <div class="meta">
+          <span id="apiBadge" class="status-chip">API: comprobando...</span>
+          <a class="admin-link" href="./index.html">Volver al catálogo</a>
+        </div>
+      </header>
+
+      <section class="glass rgpd-panel">
+        <form id="scanForm" class="rgpd-form">
+          <label class="control">
+            <span>URL objetivo</span>
+            <input id="urlInput" type="url" required placeholder="https://ejemplo.com" />
+          </label>
+          <button class="btn-primary" type="submit">Iniciar escaneo</button>
+        </form>
+
+        <div id="scanProgress" class="scan-progress" hidden>
+          <div class="scan-progress-head">
+            <span>Progreso del análisis</span>
+            <strong id="scanProgressValue">0%</strong>
+          </div>
+          <div class="scan-progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+            <div id="scanProgressBar" class="scan-progress-fill"></div>
+          </div>
+        </div>
+
+        <p class="rgpd-note">Pre-auditoría técnica automatizada. No sustituye revisión legal especializada.</p>
+      </section>
+
+      <section id="scanResult" class="glass rgpd-panel" hidden>
+        <div class="rgpd-summary">
+          <div><p class="eyebrow">Score</p><h2 id="scoreValue">0</h2></div>
+          <div><p class="eyebrow">Estado</p><p id="statusValue" class="status-chip">-</p></div>
+          <div><p class="eyebrow">URL Analizada</p><p id="urlValue" class="subtitle">-</p></div>
+          <div><p class="eyebrow">Scan ID</p><p id="scanIdValue" class="subtitle">-</p></div>
+        </div>
+
+        <p id="disclaimerText" class="rgpd-note"></p>
+        <div id="evidencePanel" class="rgpd-evidence"></div>
+        <div id="checksGrid" class="rgpd-checks"></div>
+      </section>
+
+      <section class="glass rgpd-panel">
+        <h2>Historial de sesión</h2>
+        <div id="historyList" class="history-list"></div>
+      </section>
+
+      <section id="scanError" class="glass rgpd-panel rgpd-error" hidden></section>
+    </main>
+
+    <dialog id="checkModal" class="glass check-modal">
+      <article class="check-modal-content">
+        <header class="check-modal-head">
+          <h3 id="modalTitle">Detalle de cumplimiento</h3>
+          <button id="modalClose" class="mini-btn" type="button">Cerrar</button>
+        </header>
+        <p id="modalStatusLine" class="status-chip">-</p>
+        <p id="modalDescription" class="subtitle">-</p>
+        <p id="modalEvidence"></p>
+        <p id="modalRecommendation"></p>
+        <pre id="modalDetails" class="check-modal-json"></pre>
+      </article>
+    </dialog>
+
+    <script src="./runtime-config.js" defer></script>
+    
+    <script src="./runtime-public-settings.js" defer></script>
+    <script src="./tool-gdpr-web.js" defer></script>
+  </body>
+</html>

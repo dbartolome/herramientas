@@ -1,0 +1,15 @@
+{
+  "name": "nimbus-security-platform",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:api": "npm --workspace @nimbus/api run start:dev",
+    "build": "npm -ws run build",
+    "test": "npm -ws run test",
+    "lint": "npm -ws run lint"
+  }
+}

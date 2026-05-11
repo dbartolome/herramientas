@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mi Cuenta | Nimbus Security Platform</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=Outfit:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+    <style>
+      .account-shell { width: min(980px, 94vw); }
+      .panel { padding: 18px; display: grid; gap: 12px; }
+    </style>
+  </head>
+  <body>
+    <div class="aurora aurora-a"></div>
+    <div class="aurora aurora-b"></div>
+
+    <main class="shell account-shell">
+      <header class="glass header">
+        <div>
+          <div class="brand">
+            <img src="./assets/nimbus-logo.svg" alt="Nimbus Tech" class="brand-logo" />
+            <p class="eyebrow">Nimbus Ecosystem</p>
+          </div>
+          <h1>Mi Cuenta</h1>
+          <p class="subtitle">Gestiona tu sesión y revisa el histórico de tus análisis.</p>
+        </div>
+        <div class="meta">
+          <span id="apiBadge" class="status-chip">API: comprobando...</span>
+          <a class="admin-link" href="./index.html">Volver al catálogo</a>
+        </div>
+      </header>
+
+      <section class="glass panel">
+        <h2>Acceso</h2>
+        <div class="form-row">
+          <label class="control">
+            <span>Email</span>
+            <input id="authEmail" type="email" placeholder="tu@email.com" />
+          </label>
+          <label class="control">
+            <span>Password</span>
+            <input id="authPassword" type="password" placeholder="********" />
+          </label>
+        </div>
+        <div class="btn-row">
+          <button id="registerBtn" class="btn-secondary" type="button">Registrarme</button>
+          <button id="loginBtn" class="btn-primary" type="button">Iniciar sesión</button>
+          <button id="logoutBtn" class="btn-secondary" type="button">Cerrar sesión</button>
+        </div>
+        <p id="authState" class="admin-notice">Modo abierto: inicia sesión para guardar histórico.</p>
+      </section>
+
+      <section class="glass panel">
+        <h2>Historial personal</h2>
+        <div id="myHistory" class="history-list"></div>
+      </section>
+    </main>
+
+    <script src="./runtime-config.js" defer></script>
+    
+    <script src="./runtime-public-settings.js" defer></script>
+    <script src="./mi-cuenta.js" defer></script>
+  </body>
+</html>

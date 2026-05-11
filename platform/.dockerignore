@@ -1,0 +1,9 @@
+node_modules
+**/node_modules
+apps/api/dist
+workers/security_worker/.venv
+workers/security_worker/__pycache__
+workers/security_worker/evidence
+*.log
+npm-debug.log*
+.DS_Store

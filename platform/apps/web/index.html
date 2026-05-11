@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nimbus Security Platform</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=Outfit:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+    <style>
+      .security-shell { width: min(1250px, 94vw); }
+      .panel { padding: 18px; display: grid; gap: 12px; }
+      .tool-grid { display:grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+      .tool-link { text-decoration:none; color:inherit; }
+      .tool-link .tool-card { height:100%; }
+      .tool-link p { margin:0; color: var(--text-muted); font-size:.9rem; }
+      .tool-link .category-pill { text-transform: uppercase; }
+      @media (max-width: 980px) {
+        .tool-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      }
+      @media (max-width: 680px) {
+        .tool-grid { grid-template-columns: 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="aurora aurora-a"></div>
+    <div class="aurora aurora-b"></div>
+
+    <main class="shell security-shell">
+      <header class="glass header">
+        <div>
+          <div class="brand">
+            <img src="./assets/nimbus-logo.svg" alt="Nimbus Tech" class="brand-logo" />
+            <p class="eyebrow">Nimbus Ecosystem</p>
+          </div>
+          <h1>Nimbus Security Platform</h1>
+          <p class="subtitle">Cada herramienta tiene su propia página operativa para ejecución, trazabilidad y resultados.</p>
+        </div>
+        <div class="meta">
+          <span id="apiBadge" class="status-chip">API: comprobando...</span>
+          <a class="admin-link" href="./mi-cuenta.html">Mi cuenta</a>
+          <a class="admin-link" href="./admin-tools.html">Admin herramientas</a>
+        </div>
+      </header>
+
+      <section class="glass panel">
+        <h2>Herramientas</h2>
+        <div class="tool-grid" id="toolGrid"></div>
+      </section>
+    </main>
+
+    <script src="./runtime-config.js" defer></script>
+    
+    <script src="./runtime-public-settings.js" defer></script>
+    <script src="./catalog.js" defer></script>
+  </body>
+</html>

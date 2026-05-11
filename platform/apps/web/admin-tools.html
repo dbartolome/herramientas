@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Herramientas | Nimbus Security</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=Outfit:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="aurora aurora-a"></div>
+    <div class="aurora aurora-b"></div>
+
+    <main class="shell admin-shell">
+      <header class="glass header">
+        <div>
+          <div class="brand">
+            <img src="./assets/nimbus-logo.svg" alt="Nimbus Tech" class="brand-logo" />
+            <p class="eyebrow">Nimbus Ecosystem</p>
+          </div>
+          <h1>Administración de Herramientas</h1>
+          <p class="subtitle">Configura disponibilidad, límites y parámetros por defecto del backend.</p>
+        </div>
+        <div class="meta">
+          <span id="apiBadge" class="status-chip">API: comprobando...</span>
+          <a class="admin-link" href="./index.html">Volver al catálogo</a>
+        </div>
+      </header>
+
+      <section class="admin-layout">
+        <article class="glass panel-block">
+          <h2>Editar herramienta</h2>
+          <form id="toolForm" class="admin-form">
+            <label>
+              <span>Password administración</span>
+              <input id="adminPassword" type="password" placeholder="ADMIN_PASSWORD" autocomplete="off" />
+            </label>
+            <div class="btn-row">
+              <button class="btn-secondary" id="loginBtn" type="button">Iniciar sesión admin</button>
+              <button class="btn-secondary" id="logoutBtn" type="button">Cerrar sesión</button>
+            </div>
+
+            <label>
+              <span>Token de administración (Bearer)</span>
+              <input id="adminToken" type="password" placeholder="Pega aquí tu ADMIN_TOKEN" autocomplete="off" />
+            </label>
+
+            <label>
+              <span>Tipo</span>
+              <input id="type" type="text" readonly />
+            </label>
+
+            <div class="checkbox-row">
+              <input id="enabled" type="checkbox" />
+              <label for="enabled">Habilitada</label>
+            </div>
+
+            <label>
+              <span>Nombre visible</span>
+              <input id="displayName" type="text" maxlength="120" />
+            </label>
+
+            <label>
+              <span>Descripción</span>
+              <textarea id="description" rows="3" maxlength="350"></textarea>
+            </label>
+
+            <div class="form-row">
+              <label>
+                <span>Timeout (ms)</span>
+                <input id="timeoutMs" type="number" min="1000" step="1000" />
+              </label>
+
+              <label>
+                <span>Máx. longitud asset</span>
+                <input id="maxAssetLength" type="number" min="1" step="1" />
+              </label>
+            </div>
+
+            <label>
+              <span>Default params (JSON)</span>
+              <textarea id="defaultParams" rows="8" spellcheck="false"></textarea>
+            </label>
+
+            <div class="btn-row">
+              <button class="btn-primary" type="submit">Guardar cambios</button>
+              <button class="btn-secondary" id="reloadBtn" type="button">Recargar</button>
+            </div>
+          </form>
+        </article>
+
+        <article class="glass panel-block">
+          <h2>Herramientas configuradas</h2>
+          <div class="table-wrap">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Tipo</th>
+                  <th>Nombre</th>
+                  <th>Estado</th>
+                  <th>Límite asset</th>
+                  <th>Timeout</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="toolsTableBody"></tbody>
+            </table>
+          </div>
+        </article>
+
+        <article class="glass panel-block">
+          <h2>Personalización Global</h2>
+          <form id="globalSettingsForm" class="admin-form">
+            <label>
+              <span>Nombre de marca</span>
+              <input id="brandName" type="text" maxlength="120" />
+            </label>
+            <div class="form-row">
+              <label>
+                <span>Tema por defecto</span>
+                <select id="globalThemeMode">
+                  <option value="system">Sistema</option>
+                  <option value="light">Claro</option>
+                  <option value="dark">Oscuro</option>
+                </select>
+              </label>
+              <label>
+                <span>Color principal</span>
+                <input id="accentColor" type="color" />
+              </label>
+            </div>
+            <div class="checkbox-row">
+              <input id="allowAnonymousScans" type="checkbox" />
+              <label for="allowAnonymousScans">Permitir análisis sin registro</label>
+            </div>
+            <div class="btn-row">
+              <button class="btn-primary" type="submit">Guardar personalización</button>
+            </div>
+          </form>
+        </article>
+
+        <article class="glass panel-block">
+          <h2>Usuarios y Roles</h2>
+          <div class="table-wrap">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Email</th>
+                  <th>Rol</th>
+                  <th>Plan</th>
+                  <th>Tema</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="usersTableBody"></tbody>
+            </table>
+          </div>
+        </article>
+
+        <article class="glass panel-block">
+          <h2>Auditoría Admin</h2>
+          <div class="table-wrap">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Fecha</th>
+                  <th>Acción</th>
+                  <th>IP</th>
+                  <th>Actor</th>
+                  <th>Detalle</th>
+                </tr>
+              </thead>
+              <tbody id="auditTableBody"></tbody>
+            </table>
+          </div>
+        </article>
+
+        <article class="glass panel-block">
+          <h2>Actividad</h2>
+          <p id="notice" class="admin-notice">Sin cambios aún.</p>
+        </article>
+      </section>
+    </main>
+
+    <script src="./runtime-config.js" defer></script>
+    
+    <script src="./runtime-public-settings.js" defer></script>
+    <script src="./admin-tools.js" defer></script>
+  </body>
+</html>
