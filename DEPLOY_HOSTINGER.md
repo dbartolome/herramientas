@@ -19,11 +19,10 @@ git clone git@github.com:dbartolome/herramientas.git
 cd herramientas
 ```
 
-## 2. Variables de entorno
+## 2. Variables de entorno (en raíz)
 
 ```bash
-cd deploy/hostinger
-cp .env.hostinger.example .env
+cp .env.example .env
 cp .env.api.example .env.api
 cp .env.worker.example .env.worker
 ```
@@ -37,15 +36,15 @@ Edita:
 
 ## 3. Arranque en producción
 
-Desde `deploy/hostinger`:
+Desde la raíz del proyecto:
 
 ```bash
-./scripts/deploy.sh
+./scripts/up.sh
 ```
 
 Comprobaciones:
 ```bash
-docker compose -f docker-compose.hostinger.yml ps
+docker compose ps
 curl -I http://localhost/
 curl http://localhost/api/health
 ```
@@ -60,8 +59,8 @@ Recomendado:
 ## 5. Actualizaciones
 
 ```bash
-cd deploy/hostinger
-./scripts/update.sh
+git pull --ff-only origin main
+./scripts/up.sh
 ```
 
 ## 6. Rollback rápido
@@ -73,6 +72,30 @@ git checkout <commit_estable>
 ```
 2. Rebuild:
 ```bash
-cd deploy/hostinger
-docker compose -f docker-compose.hostinger.yml --env-file .env up -d --build
+./scripts/up.sh
+```
+
+## 7. Si aparece `ERR_EMPTY_RESPONSE`
+
+1. Verificar contenedores:
+```bash
+docker compose ps
+```
+2. Verificar salud local dentro del VPS:
+```bash
+./scripts/health.sh
+```
+3. Ver logs:
+```bash
+./scripts/logs.sh
+```
+4. Verificar puerto publicado:
+```bash
+ss -ltnp | grep ':80'
+```
+5. Si hay firewall activo, abrir puertos 80/443:
+```bash
+sudo ufw allow 80/tcp
+sudo ufw allow 443/tcp
+sudo ufw reload
 ```

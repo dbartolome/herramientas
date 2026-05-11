@@ -3,60 +3,56 @@
 ## Arranque
 
 ```bash
-cd deploy/hostinger
-./scripts/deploy.sh
+./scripts/up.sh
 ```
 
 ## Estado
 
 ```bash
-docker compose -f docker-compose.hostinger.yml ps
-curl http://localhost/api/health
+docker compose ps
+./scripts/health.sh
 ```
 
 ## Logs
 
 ```bash
-docker compose -f docker-compose.hostinger.yml logs -f web
-docker compose -f docker-compose.hostinger.yml logs -f api
-docker compose -f docker-compose.hostinger.yml logs -f worker
+./scripts/logs.sh
 ```
 
 ## Reinicio
 
 ```bash
-docker compose -f docker-compose.hostinger.yml restart web api worker
+docker compose restart web api worker
 ```
 
 ## Rebuild de un servicio
 
 ```bash
-docker compose -f docker-compose.hostinger.yml up -d --build api
+docker compose up -d --build api
 ```
 
 ## Preflight (validación antes de desplegar)
 
 ```bash
-cd deploy/hostinger
 ./scripts/preflight.sh
 ```
 
 ## Parada
 
 ```bash
-docker compose -f docker-compose.hostinger.yml down
+./scripts/down.sh
 ```
 
 ## Backup básico PostgreSQL
 
 ```bash
-docker compose -f docker-compose.hostinger.yml exec postgres \
+docker compose exec postgres \
   pg_dump -U "$POSTGRES_USER" "$POSTGRES_DB" > backup.sql
 ```
 
 ## Restore básico PostgreSQL
 
 ```bash
-cat backup.sql | docker compose -f docker-compose.hostinger.yml exec -T postgres \
+cat backup.sql | docker compose exec -T postgres \
   psql -U "$POSTGRES_USER" "$POSTGRES_DB"
 ```

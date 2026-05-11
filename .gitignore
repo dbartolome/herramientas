@@ -21,6 +21,8 @@ coverage/
 .env
 .env.*
 !.env.example
+!.env.api.example
+!.env.worker.example
 
 # Logs
 logs/
