@@ -17,7 +17,7 @@ const state = {
 };
 
 const elements = {
-  apiBadge: document.getElementById("apiBadge"),
+  apiBadge: document.querySelector("#topApiBadge, #apiBadge"),
   form: document.getElementById("scanForm"),
   input: document.getElementById("assetInput"),
   result: document.getElementById("scanResult"),
@@ -27,6 +27,9 @@ const elements = {
   statusValue: document.getElementById("statusValue"),
   assetValue: document.getElementById("assetValue"),
   disclaimerText: document.getElementById("disclaimerText"),
+  executiveSummary: document.getElementById("executiveSummary"),
+  executiveImpact: document.getElementById("executiveImpact"),
+  actionPlanList: document.getElementById("actionPlanList"),
   evidencePanel: document.getElementById("evidencePanel"),
   checksGrid: document.getElementById("checksGrid"),
   historyList: document.getElementById("historyList"),
@@ -142,6 +145,34 @@ function buildReportFromScan(scan) {
   };
 }
 
+function buildExecutiveNarrative(report) {
+  const failed = (report.checks || []).filter((c) => (c.result || "fail") === "fail").length;
+  if (report.status === "high") {
+    return {
+      summary: "No se observan señales relevantes de exposición en brechas para este correo.",
+      impact: "Riesgo bajo en este análisis. Mantén buenas prácticas de contraseñas y MFA.",
+    };
+  }
+  if (report.status === "medium") {
+    return {
+      summary: "Hay indicios de exposición que requieren medidas de refuerzo.",
+      impact: "Podría existir mayor riesgo de phishing o reutilización de credenciales.",
+    };
+  }
+  return {
+    summary: "Se detecta exposición significativa del correo en brechas conocidas.",
+    impact: `Se detectaron ${failed} incidencias graves. Prioriza cambio de contraseñas y revisión de accesos.`,
+  };
+}
+
+function buildActionPlan(report) {
+  const prioritized = (report.checks || [])
+    .filter((c) => (c.result || "fail") !== "pass")
+    .slice(0, 5);
+  if (!prioritized.length) return ["Mantén MFA activo y monitoriza nuevas filtraciones de forma periódica."];
+  return prioritized.map((check) => `${check.title}: ${check.recommendation || "Aplicar medida de mitigación."}`);
+}
+
 function startProgress() {
   state.progressValue = 4;
   elements.progressWrap.hidden = false;
@@ -215,8 +246,9 @@ function renderChecks(checks) {
           <p class="status-chip ${getCheckResultClass(result)}">${getCheckResultLabel(result)}</p>
         </div>
         <h3>${check.title || "Check"}</h3>
-        <p>${check.description || "Sin descripción"}</p>
-        <p><strong>Evidencia:</strong> ${check.evidence || "Sin evidencia"}</p>
+        <p><strong>Qué significa:</strong> ${check.description || "Sin descripción"}</p>
+        <p><strong>Qué hemos visto:</strong> ${check.evidence || "Sin evidencia"}</p>
+        <p><strong>Qué hacer ahora:</strong> ${check.recommendation || "Sin recomendación"}</p>
         <button class="mini-btn details-btn" type="button" data-check-id="${check.id}">Ver detalles</button>
       </article>
     `;
@@ -233,8 +265,8 @@ function renderEvidence(report) {
 
   elements.evidencePanel.innerHTML = `
     <article class="breach-check info">
-      <h3>Resumen técnico</h3>
-      <p><strong>Resumen:</strong> ${evidence.summary || "Sin resumen adicional"}</p>
+      <h3>Evidencias del análisis</h3>
+      <p><strong>Resumen detectado:</strong> ${evidence.summary || "Sin resumen adicional"}</p>
       <p><strong>Brecha detectada:</strong> ${evidence.breachDetected || "No"}</p>
       <p><strong>Hallazgos técnicos:</strong> ${evidence.findingCount || 0}</p>
       ${typeof evidence.breachCount === "number" ? `<p><strong>Total brechas:</strong> ${evidence.breachCount}</p>` : ""}
@@ -247,6 +279,8 @@ function renderEvidence(report) {
 
 function renderResultFromScan(scan) {
   const report = buildReportFromScan(scan);
+  const narrative = buildExecutiveNarrative(report);
+  const actionPlan = buildActionPlan(report);
   state.lastReport = report;
 
   elements.error.hidden = true;
@@ -258,6 +292,13 @@ function renderResultFromScan(scan) {
   elements.statusValue.className = `status-chip ${getGlobalStatusClass(report.status)}`;
   elements.assetValue.textContent = report.targetAsset;
   elements.disclaimerText.textContent = report.disclaimer;
+  const backendSummary = (scan.result && (scan.result.executive_summary || scan.result.executiveSummary)) || "";
+  const backendImpact = (scan.result && (scan.result.executive_impact || scan.result.executiveImpact)) || "";
+  const backendActionPlan = (scan.result && (scan.result.action_plan || scan.result.actionPlan)) || [];
+  elements.executiveSummary.textContent = backendSummary || narrative.summary;
+  elements.executiveImpact.textContent = backendImpact || narrative.impact;
+  const finalActionPlan = Array.isArray(backendActionPlan) && backendActionPlan.length ? backendActionPlan : actionPlan;
+  elements.actionPlanList.innerHTML = finalActionPlan.map((item) => `<li>${item}</li>`).join("");
 
   renderEvidence(report);
   renderChecks(report.checks || []);

@@ -62,7 +62,7 @@
             <p class="eyebrow">Compliance Tool</p>
           </div>
           <h1>Estado RGPD web</h1>
-          <p class="subtitle">Escaneo técnico avanzado con resultado estructurado, evidencias y análisis detallado por check.</p>
+          <p class="subtitle">Analiza señales de cumplimiento RGPD en tu web y te propone mejoras fáciles de entender.</p>
         </div>
         <div class="meta">
           <span id="apiBadge" class="status-chip">API: comprobando...</span>
@@ -71,6 +71,13 @@
       </header>
 
       <section class="glass rgpd-panel">
+        <article class="rgpd-check info">
+          <h2>¿Qué analiza esta herramienta?</h2>
+          <p>Evalúa si tu web muestra señales técnicas de cumplimiento RGPD en aspectos clave: consentimiento de cookies, políticas visibles, presencia de rastreadores y transparencia básica en tratamiento de datos.</p>
+          <p><strong>Cómo lo hace:</strong> visita automáticamente la URL, revisa contenido visible, detecta patrones de consentimiento y comprueba evidencias técnicas (cookies, enlaces de políticas y actividad de terceros).</p>
+          <p><strong>Qué recibirás:</strong> un resumen claro de riesgo para negocio, prioridades y una lista de acciones recomendadas en lenguaje no técnico.</p>
+        </article>
+
         <form id="scanForm" class="rgpd-form">
           <label class="control">
             <span>URL objetivo</span>
@@ -93,6 +100,12 @@
       </section>
 
       <section id="scanResult" class="glass rgpd-panel" hidden>
+        <article class="rgpd-check info" id="executivePanel">
+          <h2>Resumen para ti</h2>
+          <p id="executiveSummary" class="subtitle">-</p>
+          <p id="executiveImpact" class="subtitle">-</p>
+        </article>
+
         <div class="rgpd-summary">
           <div><p class="eyebrow">Score</p><h2 id="scoreValue">0</h2></div>
           <div><p class="eyebrow">Estado</p><p id="statusValue" class="status-chip">-</p></div>
@@ -101,7 +114,12 @@
         </div>
 
         <p id="disclaimerText" class="rgpd-note"></p>
+        <article class="rgpd-check info">
+          <h3>Plan de acción recomendado</h3>
+          <ol id="actionPlanList" class="rgpd-risks"></ol>
+        </article>
         <div id="evidencePanel" class="rgpd-evidence"></div>
+        <h3>Resultados explicados</h3>
         <div id="checksGrid" class="rgpd-checks"></div>
       </section>
 
@@ -127,6 +145,7 @@
       </article>
     </dialog>
 
+    <script src="./app-shell.js" defer></script>
     <script src="./runtime-config.js" defer></script>
     
     <script src="./runtime-public-settings.js" defer></script>

@@ -8,7 +8,7 @@ const state = {
 };
 
 const el = {
-  apiBadge: document.getElementById("apiBadge"),
+  apiBadge: document.querySelector("#topApiBadge, #apiBadge"),
   toolForm: document.getElementById("toolForm"),
   reloadBtn: document.getElementById("reloadBtn"),
   loginBtn: document.getElementById("loginBtn"),

@@ -2,7 +2,7 @@ const API_BASE = window.NIMBUS_API_BASE || "http://localhost:3000/api";
 const USER_TOKEN_KEY = "nimbus_user_token";
 
 const el = {
-  badge: document.getElementById("apiBadge"),
+  badge: document.querySelector("#topApiBadge, #apiBadge"),
   authEmail: document.getElementById("authEmail"),
   authPassword: document.getElementById("authPassword"),
   registerBtn: document.getElementById("registerBtn"),

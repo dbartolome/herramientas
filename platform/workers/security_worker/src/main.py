@@ -28,6 +28,73 @@ def _patch_scan(client: redis.Redis, scan_id: str, patch: dict) -> None:
     client.set(key, json.dumps(record))
 
 
+def _build_user_facing_narrative(result: dict) -> tuple[str, str, list[str]]:
+    checks = result.get("checks") or []
+    findings = result.get("findings") or []
+
+    fail_count = 0
+    partial_count = 0
+    for item in checks:
+        status = item.get("result")
+        if status == "fail":
+            fail_count += 1
+        elif status == "partial":
+            partial_count += 1
+
+    if fail_count == 0 and partial_count == 0:
+        for finding in findings:
+            sev = str(finding.get("severity", "")).lower()
+            if sev in {"high", "critical"}:
+                fail_count += 1
+            elif sev == "medium":
+                partial_count += 1
+
+    compliance = str(result.get("complianceStatus", "")).lower()
+    score = result.get("score")
+
+    if compliance == "high" or (isinstance(score, int) and score >= 80):
+        summary = "El análisis muestra una situación global favorable en los controles revisados."
+        impact = "Riesgo operativo bajo en esta revisión automática. Conviene mantener monitorización periódica."
+    elif compliance == "medium" or (isinstance(score, int) and score >= 55):
+        summary = "Se detectan áreas de mejora relevantes que conviene corregir para reducir exposición."
+        impact = (
+            f"Se han detectado {fail_count} incidencias graves y {partial_count} parciales "
+            "que pueden afectar seguridad, confianza o cumplimiento."
+        )
+    else:
+        summary = "Se observan riesgos importantes que requieren acción prioritaria."
+        impact = (
+            f"Se han detectado {fail_count} incidencias graves y {partial_count} parciales "
+            "con posible impacto directo en el negocio."
+        )
+
+    actions: list[str] = []
+    for item in checks:
+        if item.get("result") == "pass":
+            continue
+        title = str(item.get("title", "Control"))
+        recommendation = str(item.get("recommendation", "Aplicar la corrección recomendada."))
+        actions.append(f"{title}: {recommendation}")
+        if len(actions) >= 5:
+            break
+
+    if not actions:
+        for finding in findings:
+            sev = str(finding.get("severity", "")).lower()
+            if sev in {"info", "low"}:
+                continue
+            title = str(finding.get("title", "Control"))
+            recommendation = str(finding.get("recommendation", "Aplicar la corrección recomendada."))
+            actions.append(f"{title}: {recommendation}")
+            if len(actions) >= 5:
+                break
+
+    if not actions:
+        actions = ["Mantener revisiones periódicas tras cambios de configuración o infraestructura."]
+
+    return summary, impact, actions
+
+
 def run() -> None:
     client = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, decode_responses=True)
     print(f"[worker] listening queue={QUEUE_NAME} redis={REDIS_HOST}:{REDIS_PORT}")
@@ -46,6 +113,11 @@ def run() -> None:
 
             handler = HANDLERS[job.type.value]
             result = handler(job)
+            result_dict = result.model_dump()
+            summary, impact, actions = _build_user_facing_narrative(result_dict)
+            result.executive_summary = summary
+            result.executive_impact = impact
+            result.action_plan = actions
 
             _patch_scan(
                 client,

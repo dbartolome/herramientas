@@ -17,7 +17,7 @@ const state = {
 };
 
 const elements = {
-  apiBadge: document.getElementById("apiBadge"),
+  apiBadge: document.querySelector("#topApiBadge, #apiBadge"),
   form: document.getElementById("scanForm"),
   input: document.getElementById("urlInput"),
   result: document.getElementById("scanResult"),
@@ -27,6 +27,9 @@ const elements = {
   statusValue: document.getElementById("statusValue"),
   urlValue: document.getElementById("urlValue"),
   disclaimerText: document.getElementById("disclaimerText"),
+  executiveSummary: document.getElementById("executiveSummary"),
+  executiveImpact: document.getElementById("executiveImpact"),
+  actionPlanList: document.getElementById("actionPlanList"),
   evidencePanel: document.getElementById("evidencePanel"),
   checksGrid: document.getElementById("checksGrid"),
   historyList: document.getElementById("historyList"),
@@ -43,6 +46,9 @@ const elements = {
   modalDetails: document.getElementById("modalDetails")
 };
 
+/**
+ * Devuelve una frase ejecutiva de estado entendible para usuario final.
+ */
 function getGlobalStatusLabel(status) {
   if (status === "high") return "Cumplimiento alto";
   if (status === "medium") return "Cumplimiento medio";
@@ -71,6 +77,60 @@ function mapSeverityToResult(severity) {
   if (severity === "info" || severity === "low") return "pass";
   if (severity === "medium") return "partial";
   return "fail";
+}
+
+/**
+ * Crea un resumen ejecutivo orientado a negocio a partir del resultado del scan.
+ */
+function buildExecutiveNarrative(report) {
+  const failed = (report.checks || []).filter((c) => (c.result || "fail") === "fail");
+  const partial = (report.checks || []).filter((c) => c.result === "partial");
+
+  if (report.status === "high") {
+    return {
+      summary:
+        "Tu web muestra una base sólida de cumplimiento técnico RGPD en los controles principales revisados.",
+      impact:
+        "Riesgo legal y reputacional bajo en este análisis automático. Se recomienda mantener revisión periódica y validar cambios de terceros.",
+    };
+  }
+
+  if (report.status === "medium") {
+    return {
+      summary:
+        "Tu web cumple parcialmente. Hay puntos relevantes que conviene corregir para reducir exposición ante reclamaciones o inspecciones.",
+      impact: `Se detectaron ${failed.length} incidencias críticas y ${partial.length} incidencias parciales que pueden afectar confianza de usuarios y cumplimiento.`,
+    };
+  }
+
+  return {
+    summary:
+      "Tu web presenta señales claras de riesgo RGPD en controles clave de consentimiento y transparencia.",
+    impact: `Se detectaron ${failed.length} incidencias graves que requieren acción prioritaria para reducir riesgo legal, sancionador y reputacional.`,
+  };
+}
+
+/**
+ * Genera una lista de acciones priorizadas en lenguaje práctico.
+ */
+function buildActionPlan(report) {
+  const checks = report.checks || [];
+  const prioritized = checks
+    .filter((c) => (c.result || "fail") !== "pass")
+    .sort((a, b) => {
+      const weight = { fail: 2, partial: 1, pass: 0 };
+      return (weight[b.result || "fail"] || 0) - (weight[a.result || "fail"] || 0);
+    })
+    .slice(0, 5);
+
+  if (!prioritized.length) {
+    return ["Mantén la configuración actual y repite el análisis tras cada cambio de cookies, CMS o scripts de terceros."];
+  }
+
+  return prioritized.map((check) => {
+    const recommendation = check.recommendation || "Revisar y corregir este punto.";
+    return `${check.title}: ${recommendation}`;
+  });
 }
 
 function buildReportFromScan(scan) {
@@ -199,8 +259,9 @@ function renderChecks(checks) {
           <p class="status-chip ${getCheckResultClass(result)}">${getCheckResultLabel(result)}</p>
         </div>
         <h3>${check.title || "Check"}</h3>
-        <p>${check.description || "Sin descripción"}</p>
-        <p><strong>Evidencia:</strong> ${check.evidence || "Sin evidencia"}</p>
+        <p><strong>Qué significa:</strong> ${check.description || "Sin descripción"}</p>
+        <p><strong>Qué hemos visto:</strong> ${check.evidence || "Sin evidencia"}</p>
+        <p><strong>Qué hacer ahora:</strong> ${check.recommendation || "Sin recomendación"}</p>
         <button class="mini-btn details-btn" type="button" data-check-id="${check.id}">Ver detalles</button>
       </article>
     `;
@@ -220,8 +281,8 @@ function renderEvidence(report) {
 
   elements.evidencePanel.innerHTML = `
     <article class="rgpd-check info">
-      <h3>Resumen técnico</h3>
-      <p><strong>Resumen:</strong> ${evidence.summary || "Sin resumen adicional"}</p>
+      <h3>Evidencias del análisis</h3>
+      <p><strong>Resumen detectado:</strong> ${evidence.summary || "Sin resumen adicional"}</p>
       <p><strong>Cookies antes:</strong> ${evidence.cookiesBefore?.total ?? "-"}</p>
       <p><strong>Cookies después:</strong> ${evidence.cookiesAfter?.total ?? "-"}</p>
       <p><strong>Acción consentimiento:</strong> ${evidence.consentAction || "-"}</p>
@@ -238,6 +299,8 @@ function renderEvidence(report) {
 
 function renderResultFromScan(scan) {
   const report = buildReportFromScan(scan);
+  const narrative = buildExecutiveNarrative(report);
+  const actionPlan = buildActionPlan(report);
   state.lastReport = report;
 
   elements.error.hidden = true;
@@ -249,6 +312,13 @@ function renderResultFromScan(scan) {
   elements.statusValue.className = `status-chip ${getGlobalStatusClass(report.status)}`;
   elements.urlValue.textContent = report.targetUrl;
   elements.disclaimerText.textContent = report.disclaimer;
+  const backendSummary = (scan.result && (scan.result.executive_summary || scan.result.executiveSummary)) || "";
+  const backendImpact = (scan.result && (scan.result.executive_impact || scan.result.executiveImpact)) || "";
+  const backendActionPlan = (scan.result && (scan.result.action_plan || scan.result.actionPlan)) || [];
+  elements.executiveSummary.textContent = backendSummary || narrative.summary;
+  elements.executiveImpact.textContent = backendImpact || narrative.impact;
+  const finalActionPlan = Array.isArray(backendActionPlan) && backendActionPlan.length ? backendActionPlan : actionPlan;
+  elements.actionPlanList.innerHTML = finalActionPlan.map((item) => `<li>${item}</li>`).join("");
 
   renderEvidence(report);
   renderChecks(report.checks || []);
@@ -258,6 +328,12 @@ function renderError(message) {
   elements.result.hidden = true;
   elements.error.hidden = false;
   elements.error.textContent = message;
+}
+
+function renderFailedScan(scan) {
+  renderResultFromScan(scan);
+  elements.error.hidden = false;
+  elements.error.textContent = scan.result?.summary || "El escaneo RGPD terminó con error.";
 }
 
 function openCheckModal(check) {
@@ -325,7 +401,7 @@ function startPolling(scanId) {
       } else if (scan.status === "failed") {
         clearInterval(state.pollTimer);
         finishProgress();
-        renderError(scan.result?.summary || "El escaneo RGPD terminó con error.");
+        renderFailedScan(scan);
       }
     } catch (error) {
       clearInterval(state.pollTimer);
@@ -369,7 +445,7 @@ async function handleHistoryClick(event) {
     if (scan.status === "completed") {
       renderResultFromScan(scan);
     } else if (scan.status === "failed") {
-      renderError(scan.result?.summary || "El escaneo RGPD terminó con error.");
+      renderFailedScan(scan);
     } else {
       startProgress();
       startPolling(scan.id);

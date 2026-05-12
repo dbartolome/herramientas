@@ -28,6 +28,9 @@ export interface ScanResult {
   status: ScanStatus;
   score?: number;
   summary: string;
+  executive_summary?: string;
+  executive_impact?: string;
+  action_plan?: string[];
   findings: Array<{
     id: string;
     severity: 'info' | 'low' | 'medium' | 'high' | 'critical';

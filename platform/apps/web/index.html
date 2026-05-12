@@ -11,21 +11,6 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="./styles.css" />
-    <style>
-      .security-shell { width: min(1250px, 94vw); }
-      .panel { padding: 18px; display: grid; gap: 12px; }
-      .tool-grid { display:grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
-      .tool-link { text-decoration:none; color:inherit; }
-      .tool-link .tool-card { height:100%; }
-      .tool-link p { margin:0; color: var(--text-muted); font-size:.9rem; }
-      .tool-link .category-pill { text-transform: uppercase; }
-      @media (max-width: 980px) {
-        .tool-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      }
-      @media (max-width: 680px) {
-        .tool-grid { grid-template-columns: 1fr; }
-      }
-    </style>
   </head>
   <body>
     <div class="aurora aurora-a"></div>
@@ -35,25 +20,92 @@
       <header class="glass header">
         <div>
           <div class="brand">
-            <img src="./assets/nimbus-logo.svg" alt="Nimbus Tech" class="brand-logo" />
             <p class="eyebrow">Nimbus Ecosystem</p>
           </div>
           <h1>Nimbus Security Platform</h1>
           <p class="subtitle">Cada herramienta tiene su propia página operativa para ejecución, trazabilidad y resultados.</p>
         </div>
         <div class="meta">
-          <span id="apiBadge" class="status-chip">API: comprobando...</span>
-          <a class="admin-link" href="./mi-cuenta.html">Mi cuenta</a>
-          <a class="admin-link" href="./admin-tools.html">Admin herramientas</a>
         </div>
       </header>
 
-      <section class="glass panel">
-        <h2>Herramientas</h2>
-        <div class="tool-grid" id="toolGrid"></div>
+      <section class="glass landing-hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Plataforma para usuarios finales</p>
+          <h2>Analiza tu web, dominio y correo de forma clara y guiada</h2>
+          <p class="subtitle">Introduce tu URL o correo, espera el análisis y recibe un resultado en lenguaje claro con prioridades y pasos concretos.</p>
+        </div>
+        <div class="hero-stats">
+          <article>
+            <p class="eyebrow">Cobertura</p>
+            <h3>6 herramientas</h3>
+            <p>Seguridad web, dominio, correo, velocidad y RGPD.</p>
+          </article>
+          <article>
+            <p class="eyebrow">Resultados</p>
+            <h3>100% guiados</h3>
+            <p>Qué significa, qué riesgo tienes y qué hacer primero.</p>
+          </article>
+        </div>
       </section>
+
+      <section class="glass panel trust-panel">
+        <h2>Por qué es fácil de usar</h2>
+        <div class="trust-grid">
+          <article class="trust-item">
+            <h3>Sin jerga técnica</h3>
+            <p>Los resultados se explican para cualquier persona, no solo para perfiles técnicos.</p>
+          </article>
+          <article class="trust-item">
+            <h3>Prioridades claras</h3>
+            <p>Cada análisis incluye plan de acción para saber qué corregir antes.</p>
+          </article>
+          <article class="trust-item">
+            <h3>Navegación simple</h3>
+            <p>Puedes moverte por herramientas en 1 clic desde la barra superior.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="glass panel onboarding-panel">
+        <h2>Empieza en 3 pasos</h2>
+        <div class="onboarding-grid">
+          <article class="onboarding-step">
+            <p class="eyebrow">Paso 1</p>
+            <h3>Elige una herramienta</h3>
+            <p>Selecciona el tipo de análisis que necesitas (correo, web, dominio, velocidad o RGPD).</p>
+          </article>
+          <article class="onboarding-step">
+            <p class="eyebrow">Paso 2</p>
+            <h3>Introduce tu activo</h3>
+            <p>Escribe tu dominio, URL o email. La herramienta te dirá exactamente qué dato necesita.</p>
+          </article>
+          <article class="onboarding-step">
+            <p class="eyebrow">Paso 3</p>
+            <h3>Aplica recomendaciones</h3>
+            <p>Recibirás resultados explicados para usuario final y un plan de acción priorizado.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="glass panel catalog-panel">
+        <div class="catalog-head">
+          <div>
+            <h2>Herramientas</h2>
+            <p class="subtitle">Busca por necesidad: seguridad de correo, web, dominio, rendimiento o RGPD.</p>
+          </div>
+          <label class="catalog-search">
+            <span>Buscar herramienta</span>
+            <input id="toolSearch" type="search" placeholder="Ejemplo: correo, RGPD, velocidad..." />
+          </label>
+        </div>
+        <div class="tool-grid" id="toolGrid"></div>
+        <p id="toolEmpty" class="empty" hidden>No hay herramientas que coincidan con esa búsqueda.</p>
+      </section>
+
     </main>
 
+    <script src="./app-shell.js" defer></script>
     <script src="./runtime-config.js" defer></script>
     
     <script src="./runtime-public-settings.js" defer></script>

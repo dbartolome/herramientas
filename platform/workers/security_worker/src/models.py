@@ -44,3 +44,6 @@ class ScanResult(BaseModel):
     checks: list[dict[str, Any]] = Field(default_factory=list)
     topRisks: list[dict[str, Any]] = Field(default_factory=list)
     evidence: dict[str, Any] = Field(default_factory=dict)
+    executive_summary: str | None = None
+    executive_impact: str | None = None
+    action_plan: list[str] = Field(default_factory=list)

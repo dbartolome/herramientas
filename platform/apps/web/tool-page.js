@@ -75,7 +75,7 @@ function renderFindings(findingsContainer, kpiTotal, kpiHigh, kpiMedium, finding
 
 function initToolPage(config) {
   const el = {
-    apiBadge: document.getElementById("apiBadge"),
+    apiBadge: document.querySelector("#topApiBadge, #apiBadge"),
     title: document.getElementById("toolTitle"),
     subtitle: document.getElementById("toolSubtitle"),
     form: document.getElementById("scanForm"),

@@ -59,7 +59,7 @@
             <p class="eyebrow">Security Tool</p>
           </div>
           <h1>Seguridad de tu página web</h1>
-          <p class="subtitle">Escaneo avanzado de postura de seguridad web con checks de cabeceras, HTTPS y cookies.</p>
+          <p class="subtitle">Analiza la seguridad visible de tu web y te marca prioridades claras para protegerla mejor.</p>
         </div>
         <div class="meta">
           <span id="apiBadge" class="status-chip">API: comprobando...</span>
@@ -68,6 +68,13 @@
       </header>
 
       <section class="glass web-panel">
+        <article class="web-check info">
+          <h2>¿Qué analiza esta herramienta?</h2>
+          <p>Evalúa la seguridad técnica visible de tu web para detectar señales de riesgo que puedan afectar confianza, privacidad y exposición a ataques comunes.</p>
+          <p><strong>Cómo lo hace:</strong> revisa HTTPS, cabeceras de seguridad y políticas de protección del navegador, y transforma el resultado en un diagnóstico entendible para usuario final.</p>
+          <p><strong>Qué recibirás:</strong> estado global, impacto para tu negocio y acciones concretas priorizadas.</p>
+        </article>
+
         <form id="scanForm" class="web-form">
           <label class="control">
             <span>URL objetivo</span>
@@ -90,6 +97,12 @@
       </section>
 
       <section id="scanResult" class="glass web-panel" hidden>
+        <article class="web-check info">
+          <h2>Resumen para ti</h2>
+          <p id="executiveSummary" class="subtitle">-</p>
+          <p id="executiveImpact" class="subtitle">-</p>
+        </article>
+
         <div class="web-summary">
           <div><p class="eyebrow">Score</p><h2 id="scoreValue">0</h2></div>
           <div><p class="eyebrow">Estado</p><p id="statusValue" class="status-chip">-</p></div>
@@ -98,7 +111,12 @@
         </div>
 
         <p id="disclaimerText" class="web-note"></p>
+        <article class="web-check info">
+          <h3>Plan de acción recomendado</h3>
+          <ol id="actionPlanList" class="rgpd-risks"></ol>
+        </article>
         <div id="evidencePanel" class="web-evidence"></div>
+        <h3>Resultados explicados</h3>
         <div id="checksGrid" class="web-checks"></div>
       </section>
 
@@ -124,6 +142,7 @@
       </article>
     </dialog>
 
+    <script src="./app-shell.js" defer></script>
     <script src="./runtime-config.js" defer></script>
     
     <script src="./runtime-public-settings.js" defer></script>

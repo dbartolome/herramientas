@@ -1,12 +1,60 @@
 const API_BASE = window.NIMBUS_API_BASE || "http://localhost:3000/api";
 
 const TOOLS = [
-  { slug: "email-security", type: "email_security", name: "Seguridad del correo electrónico", description: "SPF, DKIM, DMARC, MX, MTA-STS y TLS-RPT." },
-  { slug: "email-breach", type: "email_breach", name: "Vulneración de correo", description: "Consulta de exposición en brechas (HIBP)." },
-  { slug: "speed-test", type: "speed_test", name: "Test de velocidad", description: "Auditoría con PageSpeed Insights." },
-  { slug: "domain-security", type: "domain_security", name: "Seguridad del dominio", description: "Revisión DNS de postura básica de seguridad." },
-  { slug: "gdpr-web", type: "gdpr_web", name: "Estado RGPD web", description: "Análisis técnico de consentimiento y cookies." },
-  { slug: "web-security", type: "web_security", name: "Seguridad de tu página web", description: "Escaneo de superficie y cabeceras de seguridad." }
+  {
+    slug: "email-security",
+    type: "email_security",
+    name: "Seguridad del correo electrónico",
+    description: "Comprueba protección de tu correo frente a suplantaciones y errores de configuración.",
+    for: "Dominios con correo corporativo",
+    input: "Dominio o correo",
+    output: "Estado de SPF, DKIM, DMARC y plan de corrección",
+  },
+  {
+    slug: "email-breach",
+    type: "email_breach",
+    name: "Vulneración de correo",
+    description: "Revisa si un email ha aparecido en filtraciones de datos conocidas.",
+    for: "Cuentas personales o empresa",
+    input: "Email",
+    output: "Nivel de exposición y medidas inmediatas",
+  },
+  {
+    slug: "speed-test",
+    type: "speed_test",
+    name: "Test de velocidad",
+    description: "Mide el rendimiento de tu web y su impacto en experiencia de usuario.",
+    for: "Tiendas, landings y webs de negocio",
+    input: "URL web",
+    output: "Score de rendimiento y acciones priorizadas",
+  },
+  {
+    slug: "domain-security",
+    type: "domain_security",
+    name: "Seguridad del dominio",
+    description: "Analiza la salud básica DNS para reducir riesgos técnicos.",
+    for: "Cualquier dominio activo",
+    input: "Dominio o URL",
+    output: "Diagnóstico DNS y recomendaciones claras",
+  },
+  {
+    slug: "gdpr-web",
+    type: "gdpr_web",
+    name: "Estado RGPD web",
+    description: "Evalúa señales técnicas de cumplimiento de cookies y transparencia.",
+    for: "Webs con formularios, analytics o cookies",
+    input: "URL web",
+    output: "Resumen RGPD técnico + pasos de mejora",
+  },
+  {
+    slug: "web-security",
+    type: "web_security",
+    name: "Seguridad de tu página web",
+    description: "Detecta debilidades visibles en HTTPS y cabeceras de seguridad.",
+    for: "Sitios web públicos",
+    input: "URL web",
+    output: "Postura de seguridad web y plan de acción",
+  },
 ];
 
 const TOOL_ICONS = {
@@ -31,25 +79,63 @@ const TOOL_ICONS = {
 };
 
 const el = {
-  badge: document.getElementById("apiBadge"),
+  badge: document.querySelector("#topApiBadge, #apiBadge"),
   grid: document.getElementById("toolGrid"),
-  title: document.querySelector("h1")
+  title: document.querySelector("h1"),
+  search: document.getElementById("toolSearch"),
+  empty: document.getElementById("toolEmpty")
 };
 
-function renderTools() {
-  el.grid.innerHTML = TOOLS.map((tool) => `
+/**
+ * Devuelve una etiqueta de dificultad para orientar a usuarios sin perfil técnico.
+ */
+function getDifficultyLabel(toolType) {
+  if (toolType === "email_security" || toolType === "gdpr_web") return "Guiada";
+  if (toolType === "web_security" || toolType === "domain_security") return "Intermedia";
+  return "Rápida";
+}
+
+/**
+ * Construye el bloque visual de una herramienta con foco en lectura clara.
+ */
+function buildToolCardMarkup(tool) {
+  return `
     <a class="tool-link" href="./tool-${tool.slug}.html">
       <article class="tool-card glass">
         <div class="card-top">
-          <div class="icon-wrap">${TOOL_ICONS[tool.type] || ""}</div>
-          <span class="category-pill">${tool.type}</span>
+          <div class="card-headline">
+            <div class="icon-wrap">${TOOL_ICONS[tool.type] || ""}</div>
+            <div>
+              <h3 class="tool-name">${tool.name}</h3>
+              <p class="tool-description">${tool.description}</p>
+            </div>
+          </div>
         </div>
-        <h3 class="tool-name">${tool.name}</h3>
-        <p>${tool.description}</p>
-        <span class="open-link">Abrir herramienta</span>
+        <div class="tool-meta-grid">
+          <p class="tool-for"><strong>Ideal para:</strong> ${tool.for}</p>
+          <p class="tool-for"><strong>Qué necesitas:</strong> ${tool.input}</p>
+          <p class="tool-for"><strong>Qué obtienes:</strong> ${tool.output}</p>
+          <p class="tool-for"><strong>Nivel:</strong> ${getDifficultyLabel(tool.type)}</p>
+        </div>
+        <span class="open-link">Abrir guía y análisis</span>
       </article>
     </a>
-  `).join("");
+  `;
+}
+
+function renderTools(filter = "") {
+  const q = filter.trim().toLowerCase();
+  const visibleTools = TOOLS.filter((tool) => {
+    if (!q) return true;
+    const haystack = `${tool.name} ${tool.description} ${tool.type} ${tool.for}`.toLowerCase();
+    return haystack.includes(q);
+  });
+
+  el.grid.innerHTML = visibleTools.map((tool) => buildToolCardMarkup(tool)).join("");
+
+  if (el.empty) {
+    el.empty.hidden = visibleTools.length > 0;
+  }
 }
 
 async function applyPublicTitle() {
@@ -66,6 +152,9 @@ async function applyPublicTitle() {
 
 (async () => {
   renderTools();
+  if (el.search) {
+    el.search.addEventListener("input", () => renderTools(el.search.value));
+  }
 
   try {
     const res = await fetch(`${API_BASE}/health`);

@@ -17,7 +17,7 @@ const state = {
 };
 
 const elements = {
-  apiBadge: document.getElementById("apiBadge"),
+  apiBadge: document.querySelector("#topApiBadge, #apiBadge"),
   form: document.getElementById("scanForm"),
   input: document.getElementById("assetInput"),
   strategyInput: document.getElementById("strategyInput"),
@@ -28,6 +28,9 @@ const elements = {
   statusValue: document.getElementById("statusValue"),
   assetValue: document.getElementById("assetValue"),
   disclaimerText: document.getElementById("disclaimerText"),
+  executiveSummary: document.getElementById("executiveSummary"),
+  executiveImpact: document.getElementById("executiveImpact"),
+  actionPlanList: document.getElementById("actionPlanList"),
   evidencePanel: document.getElementById("evidencePanel"),
   checksGrid: document.getElementById("checksGrid"),
   historyList: document.getElementById("historyList"),
@@ -140,6 +143,32 @@ function buildReportFromScan(scan) {
   };
 }
 
+function buildExecutiveNarrative(report) {
+  const failed = (report.checks || []).filter((c) => (c.result || "fail") === "fail").length;
+  if (report.status === "high") {
+    return {
+      summary: "Tu web tiene una base de rendimiento sólida para experiencia de usuario.",
+      impact: "Mejor probabilidad de retención, conversión y visibilidad SEO técnica.",
+    };
+  }
+  if (report.status === "medium") {
+    return {
+      summary: "El rendimiento es aceptable, pero hay cuellos de botella que conviene optimizar.",
+      impact: "Puede afectar tiempos de carga percibidos y conversión en dispositivos o redes lentas.",
+    };
+  }
+  return {
+    summary: "El rendimiento actual puede perjudicar claramente la experiencia del usuario.",
+    impact: `Se detectaron ${failed} incidencias graves que pueden reducir conversión y engagement.`,
+  };
+}
+
+function buildActionPlan(report) {
+  const prioritized = (report.checks || []).filter((c) => (c.result || "fail") !== "pass").slice(0, 5);
+  if (!prioritized.length) return ["Mantén monitorización continua y repite test tras cambios de frontend o infraestructura."];
+  return prioritized.map((check) => `${check.title}: ${check.recommendation || "Aplicar optimización recomendada."}`);
+}
+
 function startProgress() {
   state.progressValue = 4;
   elements.progressWrap.hidden = false;
@@ -213,8 +242,9 @@ function renderChecks(checks) {
           <p class="status-chip ${getCheckResultClass(result)}">${getCheckResultLabel(result)}</p>
         </div>
         <h3>${check.title || "Check"}</h3>
-        <p>${check.description || "Sin descripción"}</p>
-        <p><strong>Evidencia:</strong> ${check.evidence || "Sin evidencia"}</p>
+        <p><strong>Qué significa:</strong> ${check.description || "Sin descripción"}</p>
+        <p><strong>Qué hemos visto:</strong> ${check.evidence || "Sin evidencia"}</p>
+        <p><strong>Qué hacer ahora:</strong> ${check.recommendation || "Sin recomendación"}</p>
         <button class="mini-btn details-btn" type="button" data-check-id="${check.id}">Ver detalles</button>
       </article>
     `;
@@ -231,8 +261,8 @@ function renderEvidence(report) {
 
   elements.evidencePanel.innerHTML = `
     <article class="speed-check info">
-      <h3>Resumen técnico</h3>
-      <p><strong>Resumen:</strong> ${evidence.summary || "Sin resumen adicional"}</p>
+      <h3>Evidencias del análisis</h3>
+      <p><strong>Resumen detectado:</strong> ${evidence.summary || "Sin resumen adicional"}</p>
       <p><strong>Estrategia:</strong> ${evidence.strategy || "mobile"}</p>
       <p><strong>Score detectado:</strong> ${evidence.scoreText || "n/d"}</p>
       ${evidence.metrics ? `<p><strong>Métricas:</strong> LCP ${evidence.metrics.lcpMs ?? "n/d"}ms · INP ${evidence.metrics.inpMs ?? "n/d"}ms · CLS ${evidence.metrics.cls ?? "n/d"} · TBT ${evidence.metrics.tbtMs ?? "n/d"}ms</p>` : ""}
@@ -244,6 +274,8 @@ function renderEvidence(report) {
 
 function renderResultFromScan(scan) {
   const report = buildReportFromScan(scan);
+  const narrative = buildExecutiveNarrative(report);
+  const actionPlan = buildActionPlan(report);
   state.lastReport = report;
 
   elements.error.hidden = true;
@@ -255,6 +287,13 @@ function renderResultFromScan(scan) {
   elements.statusValue.className = `status-chip ${getGlobalStatusClass(report.status)}`;
   elements.assetValue.textContent = report.targetAsset;
   elements.disclaimerText.textContent = report.disclaimer;
+  const backendSummary = (scan.result && (scan.result.executive_summary || scan.result.executiveSummary)) || "";
+  const backendImpact = (scan.result && (scan.result.executive_impact || scan.result.executiveImpact)) || "";
+  const backendActionPlan = (scan.result && (scan.result.action_plan || scan.result.actionPlan)) || [];
+  elements.executiveSummary.textContent = backendSummary || narrative.summary;
+  elements.executiveImpact.textContent = backendImpact || narrative.impact;
+  const finalActionPlan = Array.isArray(backendActionPlan) && backendActionPlan.length ? backendActionPlan : actionPlan;
+  elements.actionPlanList.innerHTML = finalActionPlan.map((item) => `<li>${item}</li>`).join("");
 
   renderEvidence(report);
   renderChecks(report.checks || []);

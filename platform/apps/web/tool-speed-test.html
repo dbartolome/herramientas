@@ -59,7 +59,7 @@
             <p class="eyebrow">Speed Test Tool</p>
           </div>
           <h1>Test de velocidad</h1>
-          <p class="subtitle">Auditoría técnica de rendimiento con PageSpeed Insights (mobile/desktop).</p>
+          <p class="subtitle">Mide la velocidad de tu web y te dice de forma clara qué mejorar para cargar más rápido.</p>
         </div>
         <div class="meta">
           <span id="apiBadge" class="status-chip">API: comprobando...</span>
@@ -68,6 +68,13 @@
       </header>
 
       <section class="glass speed-panel">
+        <article class="speed-check info">
+          <h2>¿Qué analiza esta herramienta?</h2>
+          <p>Mide el rendimiento técnico de tu web y su impacto potencial en experiencia de usuario y conversión.</p>
+          <p><strong>Cómo lo hace:</strong> ejecuta una auditoría automática de métricas clave (como LCP, INP, CLS) en modo móvil o escritorio.</p>
+          <p><strong>Qué recibirás:</strong> estado de rendimiento, impacto para usuario final y recomendaciones priorizadas.</p>
+        </article>
+
         <form id="scanForm" class="speed-form">
           <label class="control">
             <span>URL</span>
@@ -97,6 +104,12 @@
       </section>
 
       <section id="scanResult" class="glass speed-panel" hidden>
+        <article class="speed-check info">
+          <h2>Resumen para ti</h2>
+          <p id="executiveSummary" class="subtitle">-</p>
+          <p id="executiveImpact" class="subtitle">-</p>
+        </article>
+
         <div class="speed-summary">
           <div><p class="eyebrow">Score</p><h2 id="scoreValue">0</h2></div>
           <div><p class="eyebrow">Estado</p><p id="statusValue" class="status-chip">-</p></div>
@@ -105,7 +118,12 @@
         </div>
 
         <p id="disclaimerText" class="speed-note"></p>
+        <article class="speed-check info">
+          <h3>Plan de acción recomendado</h3>
+          <ol id="actionPlanList" class="rgpd-risks"></ol>
+        </article>
         <div id="evidencePanel" class="speed-evidence"></div>
+        <h3>Resultados explicados</h3>
         <div id="checksGrid" class="speed-checks"></div>
       </section>
 
@@ -131,6 +149,7 @@
       </article>
     </dialog>
 
+    <script src="./app-shell.js" defer></script>
     <script src="./runtime-config.js" defer></script>
     
     <script src="./runtime-public-settings.js" defer></script>

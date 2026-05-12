@@ -50,8 +50,8 @@
 
   function ensureHeaderThemeButton(initialMode) {
     if (document.getElementById("themeToggleBtn")) return;
-    const meta = document.querySelector(".header .meta");
-    if (!meta) return;
+    const themeMount = document.getElementById("themeMount");
+    if (!themeMount) return;
 
     const btn = document.createElement("button");
     btn.type = "button";
@@ -69,7 +69,7 @@
       btn.innerHTML = modeMarkup(mode);
     });
 
-    meta.insertBefore(btn, meta.firstChild);
+    themeMount.appendChild(btn);
   }
 
   async function apply() {

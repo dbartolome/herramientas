@@ -17,7 +17,7 @@ const state = {
 };
 
 const elements = {
-  apiBadge: document.getElementById("apiBadge"),
+  apiBadge: document.querySelector("#topApiBadge, #apiBadge"),
   form: document.getElementById("scanForm"),
   assetInput: document.getElementById("assetInput"),
   dkimSelector: document.getElementById("dkimSelector"),
@@ -28,6 +28,9 @@ const elements = {
   statusValue: document.getElementById("statusValue"),
   assetValue: document.getElementById("assetValue"),
   disclaimerText: document.getElementById("disclaimerText"),
+  executiveSummary: document.getElementById("executiveSummary"),
+  executiveImpact: document.getElementById("executiveImpact"),
+  actionPlanList: document.getElementById("actionPlanList"),
   evidencePanel: document.getElementById("evidencePanel"),
   checksGrid: document.getElementById("checksGrid"),
   historyList: document.getElementById("historyList"),
@@ -123,6 +126,36 @@ function buildReportFromScan(scan) {
   };
 }
 
+function buildExecutiveNarrative(report) {
+  const failed = (report.checks || []).filter((c) => (c.result || "fail") === "fail").length;
+  const partial = (report.checks || []).filter((c) => c.result === "partial").length;
+  if (report.status === "high") {
+    return {
+      summary: "Tu dominio de correo muestra una configuración sólida de autenticación y protección.",
+      impact: "Riesgo bajo de suplantación y mejor probabilidad de entrega/confiabilidad en proveedores de correo.",
+    };
+  }
+  if (report.status === "medium") {
+    return {
+      summary: "La configuración de correo es aceptable, pero tiene huecos relevantes que conviene corregir.",
+      impact: `Se detectaron ${failed} incidencias críticas y ${partial} parciales que pueden afectar seguridad y reputación del dominio.`,
+    };
+  }
+  return {
+    summary: "La configuración de correo presenta riesgos importantes de seguridad y confianza.",
+    impact: `Se detectaron ${failed} incidencias graves que aumentan exposición a suplantación y rechazo de mensajes.`,
+  };
+}
+
+function buildActionPlan(report) {
+  const prioritized = (report.checks || [])
+    .filter((c) => (c.result || "fail") !== "pass")
+    .sort((a, b) => ((b.result || "fail") === "fail" ? 2 : 1) - ((a.result || "fail") === "fail" ? 2 : 1))
+    .slice(0, 5);
+  if (!prioritized.length) return ["Mantén esta configuración y repite el análisis tras cambios DNS o de proveedor de correo."];
+  return prioritized.map((check) => `${check.title}: ${check.recommendation || "Aplicar corrección técnica recomendada."}`);
+}
+
 function startProgress() {
   state.progressValue = 4;
   elements.progressWrap.hidden = false;
@@ -196,8 +229,9 @@ function renderChecks(checks) {
           <p class="status-chip ${getCheckResultClass(result)}">${getCheckResultLabel(result)}</p>
         </div>
         <h3>${check.title || "Check"}</h3>
-        <p>${check.description || "Sin descripción"}</p>
-        <p><strong>Evidencia:</strong> ${check.evidence || "Sin evidencia"}</p>
+        <p><strong>Qué significa:</strong> ${check.description || "Sin descripción"}</p>
+        <p><strong>Qué hemos visto:</strong> ${check.evidence || "Sin evidencia"}</p>
+        <p><strong>Qué hacer ahora:</strong> ${check.recommendation || "Sin recomendación"}</p>
         <button class="mini-btn details-btn" type="button" data-check-id="${check.id}">Ver detalles</button>
       </article>
     `;
@@ -214,8 +248,8 @@ function renderEvidence(report) {
 
   elements.evidencePanel.innerHTML = `
     <article class="email-check info">
-      <h3>Resumen técnico</h3>
-      <p><strong>Resumen:</strong> ${evidence.summary || "Sin resumen adicional"}</p>
+      <h3>Evidencias del análisis</h3>
+      <p><strong>Resumen detectado:</strong> ${evidence.summary || "Sin resumen adicional"}</p>
       <p><strong>Selector DKIM usado:</strong> ${evidence.dkimSelector || "default"}</p>
       ${riskList ? `<ul class="rgpd-risks">${riskList}</ul>` : ""}
     </article>
@@ -224,6 +258,8 @@ function renderEvidence(report) {
 
 function renderResultFromScan(scan) {
   const report = buildReportFromScan(scan);
+  const narrative = buildExecutiveNarrative(report);
+  const actionPlan = buildActionPlan(report);
   state.lastReport = report;
 
   elements.error.hidden = true;
@@ -235,6 +271,13 @@ function renderResultFromScan(scan) {
   elements.statusValue.className = `status-chip ${getGlobalStatusClass(report.status)}`;
   elements.assetValue.textContent = report.targetAsset;
   elements.disclaimerText.textContent = report.disclaimer;
+  const backendSummary = (scan.result && (scan.result.executive_summary || scan.result.executiveSummary)) || "";
+  const backendImpact = (scan.result && (scan.result.executive_impact || scan.result.executiveImpact)) || "";
+  const backendActionPlan = (scan.result && (scan.result.action_plan || scan.result.actionPlan)) || [];
+  elements.executiveSummary.textContent = backendSummary || narrative.summary;
+  elements.executiveImpact.textContent = backendImpact || narrative.impact;
+  const finalActionPlan = Array.isArray(backendActionPlan) && backendActionPlan.length ? backendActionPlan : actionPlan;
+  elements.actionPlanList.innerHTML = finalActionPlan.map((item) => `<li>${item}</li>`).join("");
 
   renderEvidence(report);
   renderChecks(report.checks || []);
@@ -244,6 +287,12 @@ function renderError(message) {
   elements.result.hidden = true;
   elements.error.hidden = false;
   elements.error.textContent = message;
+}
+
+function renderFailedScan(scan) {
+  renderResultFromScan(scan);
+  elements.error.hidden = false;
+  elements.error.textContent = scan.result?.summary || "El escaneo terminó con error.";
 }
 
 function openCheckModal(check) {
@@ -317,7 +366,7 @@ function startPolling(scanId) {
       } else if (scan.status === "failed") {
         clearInterval(state.pollTimer);
         finishProgress();
-        renderError(scan.result?.summary || "El escaneo terminó con error.");
+        renderFailedScan(scan);
       }
     } catch (error) {
       clearInterval(state.pollTimer);
@@ -361,7 +410,7 @@ async function handleHistoryClick(event) {
     if (scan.status === "completed") {
       renderResultFromScan(scan);
     } else if (scan.status === "failed") {
-      renderError(scan.result?.summary || "El escaneo terminó con error.");
+      renderFailedScan(scan);
     } else {
       startProgress();
       startPolling(scan.id);
