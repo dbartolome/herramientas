@@ -99,6 +99,18 @@ panel_herramientas/
 - Plantilla estándar para añadir handler backend + página frontend + checks.
 
 ## 2. Arranque rápido local
+### Opción recomendada para Windows
+Desde la raíz del proyecto:
+```bat
+arrancar_windows.bat
+```
+
+Para parar servicios:
+```bat
+parar_windows.bat
+```
+
+### Arranque manual (Linux/macOS)
 Infra:
 ```bash
 cd platform/infra
@@ -138,4 +150,3 @@ python3 -m http.server 8090
 Toda sesión debe generar/actualizar:
 - `docs/NN_seccion.md` (NN incremental).
 - Contenido mínimo: objetivo, cambios, archivos tocados, validaciones, riesgos, próximos pasos.
-
